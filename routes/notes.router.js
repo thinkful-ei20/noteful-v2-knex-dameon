@@ -6,43 +6,74 @@ const express = require('express');
 const router = express.Router();
 
 // TEMP: Simple In-Memory Database
-const data = require('../db/notes');
-const simDB = require('../db/simDB');
-const notes = simDB.initialize(data);
+// const data = require('../db/notes');
+// const simDB = require('../db/simDB');
+// const notes = simDB.initialize(data);
+const knex = require('../knex');
 
 // Get All (and search by query)
 router.get('/notes', (req, res, next) => {
   const { searchTerm } = req.query;
 
-  notes.filter(searchTerm)
-    .then(list => {
-      res.json(list);
+  knex
+    .select('notes.id', 'title', 'content')
+    .from('notes')
+    .modify(queryBuilder => {
+      if (searchTerm) {
+        queryBuilder.where('title', 'like', `%${searchTerm}%`);
+      }
+    })
+    .orderBy('notes.id')
+    .then(results => {
+      // console.log(JSON.stringify(results, null, 2));
+      res.json(results);
     })
     .catch(err => {
+      // console.error(err);
       next(err);
     });
+
+  // notes.filter(searchTerm)
+  //   .then(list => {
+  //     res.json(list);
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 });
 
 // Get a single item
 router.get('/notes/:id', (req, res, next) => {
-  const id = req.params.id;
+  const searchTerm = req.params.id;
+  console.log(searchTerm);
 
-  notes.find(id)
-    .then(item => {
-      if (item) {
-        res.json(item);
-      } else {
-        next();
-      }
-    })
-    .catch(err => {
-      next(err);
-    });
+
+  knex
+  .select()
+  .from('notes')
+  .where({'id': searchTerm})
+  .then(results => {
+    //results.status(200).send('Success');
+    res.json(results, null, 2);
+  }).catch(err => {
+    next(err);
+  });
+  // notes.find(id)
+  //   .then(item => {
+  //     if (item) {
+  //       res.json(item);
+  //     } else {
+  //       next();
+  //     }
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 });
 
 // Put update an item
 router.put('/notes/:id', (req, res, next) => {
-  const id = req.params.id;
+  const searchTerm = req.params.id;
 
   /***** Never trust users - validate input *****/
   const updateObj = {};
@@ -61,17 +92,30 @@ router.put('/notes/:id', (req, res, next) => {
     return next(err);
   }
 
-  notes.update(id, updateObj)
-    .then(item => {
-      if (item) {
-        res.json(item);
-      } else {
-        next();
-      }
-    })
-    .catch(err => {
+  knex('notes')
+    .where({id:searchTerm})
+    .update(updateObj)
+    .returning(['id','content','title'])
+    .then(results => {
+      res.json(results);
+    }).catch(err => {
       next(err);
     });
+
+
+
+
+  // notes.update(id, updateObj)
+  //   .then(item => {
+  //     if (item) {
+  //       res.json(item);
+  //     } else {
+  //       next();
+  //     }
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 });
 
 // Post (insert) an item
@@ -86,28 +130,52 @@ router.post('/notes', (req, res, next) => {
     return next(err);
   }
 
-  notes.create(newItem)
-    .then(item => {
-      if (item) {
-        res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
-      }
-    })
-    .catch(err => {
+  knex('notes')
+    .insert([newItem])
+    .returning(['id', 'content','title'])
+    .then(results => {
+      res.json(results[0], null, 2);
+    }).catch(err => {
       next(err);
     });
+
+
+
+
+
+
+  // notes.create(newItem)
+  //   .then(item => {
+  //     if (item) {
+  //       res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
+  //     }
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 });
 
 // Delete an item
 router.delete('/notes/:id', (req, res, next) => {
-  const id = req.params.id;
+  const searchTerm = req.params.id;
 
-  notes.delete(id)
-    .then(() => {
-      res.sendStatus(204);
-    })
-    .catch(err => {
+knex('notes')
+    .where({id:searchTerm})
+    .del()
+    .then(results => {
+      res.status(204).json(results);
+    }).catch(err => {
       next(err);
     });
+
+
+  // notes.delete(id)
+  //   .then(() => {
+  //     res.sendStatus(204);
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 });
 
 module.exports = router;
