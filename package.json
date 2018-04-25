@@ -8,7 +8,7 @@
 	},
 	"main": "server.js",
 	"scripts": {
-		"dev": "nodemon queries.js",
+		"dev": "nodemon server.js",
 		"start": "node server.js"
 	},
 	"dependencies": {
@@ -19,3 +19,4 @@
 		"pg": "^7.4.1"
 	}
 }
+ 

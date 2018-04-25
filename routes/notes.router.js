@@ -51,10 +51,10 @@ router.get('/notes/:id', (req, res, next) => {
   knex
   .select()
   .from('notes')
-  .where({'id': searchTerm})
+  .where('id', searchTerm)
   .then(results => {
     //results.status(200).send('Success');
-    res.json(results, null, 2);
+    res.json(results[0]);
   }).catch(err => {
     next(err);
   });
