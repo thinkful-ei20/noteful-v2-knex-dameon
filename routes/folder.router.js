@@ -62,7 +62,6 @@ router.put('/folders/:id', (req, res, next) => {
     });
 });
 
-
 router.post('/folders', (req, res, next) => {
   const { name  } = req.body;
   
@@ -85,19 +84,27 @@ router.post('/folders', (req, res, next) => {
 
 });
 
-router.delete('/folders/:id', (req, res, next) => {
-  const searchTerm = req.params.id;
+// router.delete('/folders/:id', (req, res, next) => {
+//   const searchTerm = req.params.id;
   
-  knex('notes')
-    .where({id:searchTerm})
-    .del()
-    .then(results => {
-      res.status(204).json(results);
-    }).catch(err => {
-      next(err);
-    });
+//   knex('notes')
+//     .where({id:searchTerm})
+//     .del()
+//     .then(results => {
+//       res.status(204).json(results);
+//     }).catch(err => {
+//       next(err);
+//     });
+// });
+router.delete('/folders/:id', (req, res, next) => {
+  knex.del()
+    .where('id', req.params.id)
+    .from('folders')
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch(next);
 });
-
 
 
 
