@@ -7,6 +7,7 @@ const { PORT } = require('./config');
 
 const notesRouter = require('./routes/notes.router');
 let folderRouter = require('./routes/folder.router');
+let tagsRouter = require('./routes/tags.router');
 // Create an Express application
 const app = express();
 
@@ -25,7 +26,7 @@ app.use(express.json());
 app.use('/api', notesRouter);
 
 app.use('/api', folderRouter);
-
+app.use('/api', tagsRouter);
 
 
 // Catch-all 404
