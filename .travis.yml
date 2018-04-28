@@ -2,7 +2,7 @@ language: node_js
 node_js: node
 services: postgresql
 before_script:
-  - psql -U dev -c 'CREATE DATABASE "noteful-test";'
+  - psql -U postgres -c 'CREATE DATABASE "noteful-test";'
 
 
 
