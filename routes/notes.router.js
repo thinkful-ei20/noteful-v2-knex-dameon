@@ -56,20 +56,23 @@ router.get('/notes/:id', (req, res, next) => {
     .then(results => {
       let result =[results];
       if (results){
-        let hydrated = hydrateNotes(result);
-        res.json(hydrated[0]);
+        let [hydrated] = hydrateNotes(result);
+        res.json(hydrated);
       } else { next(); }
     })
     .catch(err => next(err));
 });
 
 router.post('/notes', (req, res, next) => {
-  const { title, content, folder_id, tags } = req.body; // Add `folder_id` to object destructure
+  const { title, content, folder_id, tags=[] } = req.body; // Add `folder_id` to object destructure
   const newItem = {
     title,
     content,
     folder_id 
   };
+  if (!newItem.title) 
+  { const err = new Error('Missing `title` in request body'); err.status = 400; return next(err); }
+
   let noteId;
   // Insert new note, instead of returning all the fields, just return the new `id`
   knex.insert(newItem)
@@ -103,7 +106,7 @@ router.post('/notes', (req, res, next) => {
 
 router.put('/notes/:id', (req, res, next) => {
   const id= req.params.id;
-  const { title, content, folderId,tags} = req.body;
+  const { title, content, folderId,tags=[]} = req.body;
   /***** Never trust users - validate input *****/
   const updateObj = {
     title,
@@ -122,6 +125,8 @@ router.put('/notes/:id', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
+
+
   knex('notes')
     .update(updateObj)
     .where({id})
@@ -137,9 +142,13 @@ router.put('/notes/:id', (req, res, next) => {
     .then(() => {
       return knex.select('notes.id','title','content','folders.id as folder_id','folders.name as foldername', 'tags.id as tagId', 'tags.name as tagName')
         .from('notes')
+
         .leftJoin('folders', 'notes.folder_id', 'folders.id')
+
         .leftJoin('notes_tags', 'notes.id', 'notes_tags.note_id')
+
         .leftJoin('tags','notes_tags.tag_id','tags.id')
+
         .where('notes.id', id);
     })  .then(result => {
       if (result){
@@ -162,6 +171,14 @@ router.delete('/notes/:id', (req, res, next) => {
     })
     .catch(err => next(err));
 });
+
+
+
+
+
+
+
+
 
 module.exports = router;
 
