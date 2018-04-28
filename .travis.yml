@@ -2,4 +2,13 @@ language: node_js
 node_js: node
 services: postgresql
 before_script:
-  - psql -U dev -c 'CREATE DATABASE "noteful-test";'
+  - psql -c 'CREATE DATABASE noteful-test;' -U dev
+  addons:
+    postgresql:"10"
+    apt:
+      packages:
+        - postgresql-10
+        -postgresql-client-10
+        env:
+          global:
+            -PGPORT=5433
