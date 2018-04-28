@@ -4,7 +4,7 @@ let util = require('util');
 let exec = util.promisify(require('child_process').exec);
 
 module.exports = function(file){
-    return exec(`psql -U dev -f ${file} -d postgres://postgres:@localhost/noteful-test`);
+    return exec(`psql -U dev -f ${file}  postgres://dev:dev@localhost/noteful-test`);
 };
 
 
